@@ -42,7 +42,7 @@ export async function GET(req: Request) {
     stripeSecretKey: shape(process.env.STRIPE_SECRET_KEY, ["sk_test_", "sk_live_", "rk_test_", "rk_live_"]),
     stripeWebhookSecret: shape(process.env.STRIPE_WEBHOOK_SECRET, ["whsec_"]),
     stripePriceId: shape(process.env.STRIPE_PRICE_ID, ["price_"]),
-    blobToken: shape(process.env.BLOB_READ_WRITE_TOKEN, ["vercel_blob_rw_"]),
+    blobToken: shape(process.env.BLOB_READ_WRITE_TOKEN, ["vercel_blob_rw_", "eyJ"]),
     oauthConfigured: configuredMap(),
   });
 }
