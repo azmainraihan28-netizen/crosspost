@@ -1,7 +1,7 @@
 import "server-only";
 import { and, eq, inArray, lte } from "drizzle-orm";
 import { db, posts, postTargets, socialAccounts, metrics, type SocialAccount } from "@/db";
-import { adapters, PLATFORMS, isPlatformId, type AccountCtx, type MetricsResult } from "./platforms";
+import { adapters, demoAllowed, PLATFORMS, isPlatformId, type AccountCtx, type MetricsResult } from "./platforms";
 import { absoluteMediaUrl } from "./platforms/media";
 import { decrypt, encrypt } from "./crypto";
 
@@ -69,6 +69,9 @@ export async function publishPost(postId: string) {
         if (text.length > meta.charLimit) throw new Error(`Text exceeds ${meta.name}'s ${meta.charLimit} character limit`);
         if (meta.requiresMedia && media.length === 0) throw new Error(`${meta.name} requires an image`);
 
+        if (account.isDemo && !demoAllowed()) {
+          throw new Error("Demo accounts are disabled. Connect a real account to publish.");
+        }
         const result = account.isDemo
           ? { id: `demo_${target.id}`, url: undefined }
           : await adapters[account.platform].publish(await accountContext(account), { text, media });
