@@ -75,6 +75,7 @@ All variables are documented in [`.env.example`](.env.example).
 | `INSTAGRAM_CLIENT_ID` / `INSTAGRAM_CLIENT_SECRET` | per network | Meta app (Instagram API with Instagram Login) |
 | `FACEBOOK_CLIENT_ID` / `FACEBOOK_CLIENT_SECRET` | per network | Meta app (Facebook Login) |
 | `THREADS_CLIENT_ID` / `THREADS_CLIENT_SECRET` | per network | Meta app (Threads API) |
+| `FACEBOOK_CONFIG_ID` | no | Facebook Login for Business configuration ID. When set, it replaces the requested scopes. |
 | `META_GRAPH_VERSION` | no | Defaults to `v23.0`. |
 
 ---

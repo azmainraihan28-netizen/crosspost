@@ -150,11 +150,15 @@ export const facebook: PlatformAdapter = {
   isConfigured: () => Boolean(process.env.FACEBOOK_CLIENT_ID && process.env.FACEBOOK_CLIENT_SECRET),
 
   authorizeUrl({ state, redirectUri }) {
+    // Facebook Login for Business apps can use a Configuration ID (recommended by Meta) instead of scope.
+    const configId = process.env.FACEBOOK_CONFIG_ID?.trim();
     return `https://www.facebook.com/${GRAPH_VERSION}/dialog/oauth?${qs({
-      client_id: process.env.FACEBOOK_CLIENT_ID!,
+      client_id: process.env.FACEBOOK_CLIENT_ID!.trim(),
       redirect_uri: redirectUri,
       state,
-      scope: "pages_show_list,pages_manage_posts,pages_read_engagement",
+      ...(configId
+        ? { config_id: configId, response_type: "code", override_default_response_type: "true" }
+        : { scope: "pages_show_list,pages_manage_posts,pages_read_engagement" }),
     })}`;
   },
 
