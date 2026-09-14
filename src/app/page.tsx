@@ -236,6 +236,11 @@ export default async function Landing() {
       <footer className="border-t border-line">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-8 text-sm text-muted">
           <Logo />
+          <nav className="flex gap-5">
+            <Link href="/privacy" className="hover:text-ink">Privacy</Link>
+            <Link href="/terms" className="hover:text-ink">Terms</Link>
+            <Link href="/data-deletion" className="hover:text-ink">Data deletion</Link>
+          </nav>
           <p className="font-mono text-xs">© {new Date().getFullYear()} {APP_NAME}</p>
         </div>
       </footer>

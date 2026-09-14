@@ -7,6 +7,7 @@ import { applySubscription, billingConfigured, getStripe } from "@/lib/billing";
 import { PageHeader } from "@/components/page-header";
 import { fmt } from "@/components/format";
 import { BillingButton } from "./billing-button";
+import { DeleteAccount } from "./delete-account";
 
 export const metadata = { title: "Plan & billing" };
 
@@ -35,7 +36,7 @@ export default async function BillingPage({ searchParams }: PageProps<"/app/bill
 
   return (
     <>
-      <PageHeader eyebrow="Billing" title="Plan & billing" />
+      <PageHeader eyebrow="Account" title="Plan & billing" />
 
       {checkout === "success" && (
         <p className="mb-6 rounded-xl bg-moss/10 px-4 py-3 text-sm text-moss">
@@ -108,6 +109,7 @@ export default async function BillingPage({ searchParams }: PageProps<"/app/bill
           </section>
         )}
       </div>
+      <DeleteAccount />
     </>
   );
 }
