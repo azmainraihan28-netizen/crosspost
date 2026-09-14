@@ -155,9 +155,14 @@ The app needs three things in production: a database (Turso), something that run
      { "crons": [{ "path": "/api/cron/publish", "schedule": "* * * * *" }] }
      ```
      Vercel sends `Authorization: Bearer $CRON_SECRET` automatically.
-   - **Vercel Hobby** (cron limited to daily): use a free external pinger such as cron-job.org or a GitHub Actions workflow that calls
-     `curl -H "Authorization: Bearer $CRON_SECRET" https://your-domain/api/cron/publish` every minute.
-6. Update every OAuth app's callback URL and the Stripe webhook to the production domain.
+   - **Vercel Hobby** (cron limited to daily): this repo includes `.github/workflows/publish-scheduler.yml`, which calls the
+     endpoint every 5 minutes. Add a repo secret `CRON_SECRET` (same value as Vercel) and a repo variable
+     `CRON_URL=https://your-domain/api/cron/publish`. GitHub may delay scheduled runs by a few minutes, and on **private**
+     repos every run uses billable Actions minutes (the 2,000 free minutes cover roughly every 30 minutes). For
+     on-the-minute publishing, use cron-job.org (every minute) or Vercel Pro instead.
+7. **Health check:** `curl -H "Authorization: Bearer $CRON_SECRET" https://your-domain/api/health` shows which settings
+   are configured (never their values).
+8. Update every OAuth app's callback URL and the Stripe webhook to the production domain.
 
 ### Option B: a single Node server (Railway, Render, Fly.io, VPS)
 

@@ -5,7 +5,7 @@ import { z } from "zod";
 import { PLATFORMS, type PlatformId } from "./platforms/meta";
 import { HttpError } from "./session";
 
-const MODEL = process.env.ANTHROPIC_MODEL ?? "claude-opus-5";
+const MODEL = process.env.ANTHROPIC_MODEL?.trim() || "claude-opus-5";
 
 export function aiConfigured() {
   return Boolean(process.env.ANTHROPIC_API_KEY);

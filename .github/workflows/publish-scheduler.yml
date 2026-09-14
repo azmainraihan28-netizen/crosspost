@@ -1,0 +1,36 @@
+# Publishes due posts by calling the app's cron endpoint.
+# GitHub runs scheduled workflows at most every 5 minutes (often a few minutes late).
+# Setup: repo secret CRON_SECRET (same value as in Vercel) and repo variable CRON_URL.
+name: Publish scheduler
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: publish-scheduler
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Call /api/cron/publish
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          CRON_URL: ${{ vars.CRON_URL }}
+        run: |
+          if [ -z "$CRON_URL" ] || [ -z "$CRON_SECRET" ]; then
+            echo "::error::Set the CRON_URL variable and CRON_SECRET secret in repo settings"; exit 1
+          fi
+          for attempt in 1 2 3; do
+            code=$(curl -sS -o response.json -w '%{http_code}' --max-time 120 \
+              -H "Authorization: Bearer $CRON_SECRET" "$CRON_URL" || echo 000)
+            echo "Attempt $attempt: HTTP $code $(cat response.json 2>/dev/null)"
+            [ "$code" = "200" ] && exit 0
+            [ "$code" = "401" ] && { echo "::error::Unauthorized: CRON_SECRET doesn't match Vercel"; exit 1; }
+            sleep 10
+          done
+          echo "::error::Cron endpoint failed after 3 attempts"; exit 1

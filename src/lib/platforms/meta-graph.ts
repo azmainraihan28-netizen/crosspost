@@ -4,7 +4,7 @@ import type { PlatformId } from "./meta";
 // Instagram (Instagram API with Instagram Login), Facebook Pages and Threads all use Meta's
 // container-based Graph APIs, so they share helpers here.
 
-const GRAPH_VERSION = process.env.META_GRAPH_VERSION ?? "v23.0";
+const GRAPH_VERSION = process.env.META_GRAPH_VERSION?.trim() || "v23.0";
 
 function qs(params: Record<string, string>) {
   return new URLSearchParams(params).toString();
