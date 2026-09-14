@@ -135,7 +135,7 @@ export function WeekPlanner({
             </button>
           </div>
         </div>
-        {!aiEnabled && <p className="text-sm text-amber md:col-span-2">Set ANTHROPIC_API_KEY in your environment to enable AI features.</p>}
+        {!aiEnabled && <p className="text-sm text-amber md:col-span-2">Set OPENAI_API_KEY in your environment to enable AI features.</p>}
         {error && <p className="rounded-lg bg-danger/10 px-3 py-2 text-sm text-danger md:col-span-2">{error}</p>}
       </form>
 

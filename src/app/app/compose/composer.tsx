@@ -391,7 +391,7 @@ export function Composer({
                   {variations ? "Regenerate" : "Generate"}
                 </button>
               </div>
-              {!aiEnabled && <p className="mt-3 text-sm text-amber">Set ANTHROPIC_API_KEY to enable AI features.</p>}
+              {!aiEnabled && <p className="mt-3 text-sm text-amber">Set OPENAI_API_KEY to enable AI features.</p>}
               {content.trim().length < 3 && aiEnabled && <p className="mt-3 text-sm text-muted">Write a draft or topic above first.</p>}
               {aiError && <p className="mt-3 text-sm text-danger">{aiError}</p>}
               {aiLoading && <p className="mt-4 animate-pulse font-mono text-xs text-muted">Writing variations for each network…</p>}

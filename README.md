@@ -5,12 +5,12 @@ Compose once, publish everywhere. A lean, self-hostable social media scheduler:
 - **Connect accounts via OAuth**: X, LinkedIn, Instagram (Business/Creator), Facebook Pages, Threads
 - **Compose once**, customize per network, with **live per-platform previews** and character limits
 - **Publish now, schedule, or add to a queue** of weekly posting times; **calendar** with drag-to-reschedule; **drafts**
-- **AI** (Claude): platform-tuned **post variations** and a **week of content from a topic**
+- **AI** (OpenAI, or Anthropic Claude): platform-tuned **post variations** and a **week of content from a topic**
 - **Analytics**: reach and engagement pulled from each network
 - **Email/password auth** and a **Stripe** subscription (Starter free / Pro $19)
 - **Demo mode**: try everything locally before registering any developer apps
 
-Built with Next.js 16 (App Router), TypeScript, Tailwind CSS 4, Drizzle ORM + libSQL (SQLite locally, Turso in production), Stripe, and the Anthropic SDK. Platform clients and prompts are adapted from [langchain-ai/social-media-agent](https://github.com/langchain-ai/social-media-agent) (MIT; see `THIRD_PARTY_NOTICES.md`).
+Built with Next.js 16 (App Router), TypeScript, Tailwind CSS 4, Drizzle ORM + libSQL (SQLite locally, Turso in production), Stripe, and the OpenAI SDK (Anthropic optional). Platform clients and prompts are adapted from [langchain-ai/social-media-agent](https://github.com/langchain-ai/social-media-agent) (MIT; see `THIRD_PARTY_NOTICES.md`).
 
 ---
 
@@ -30,7 +30,7 @@ To enable the rest, add keys to `.env.local` and restart `npm run dev`:
 
 | Feature | What to set |
 | --- | --- |
-| AI variations & week planner | `ANTHROPIC_API_KEY` |
+| AI variations & week planner | `OPENAI_API_KEY` |
 | Upgrades / payments | `STRIPE_SECRET_KEY` (test mode), optionally `STRIPE_WEBHOOK_SECRET` |
 | Real posting to a network | That network's `*_CLIENT_ID` / `*_CLIENT_SECRET` (see below) |
 
@@ -62,7 +62,9 @@ All variables are documented in [`.env.example`](.env.example).
 | `INTERNAL_SCHEDULER` | no | `true` (default) runs the publish loop every 30s inside the server. Set `false` on serverless. |
 | `CRON_SECRET` | prod | Bearer token for `GET/POST /api/cron/publish`. |
 | `DEMO_MODE` | no | `true` lets unconfigured networks connect as demo accounts. **Set `false` in production.** |
-| `ANTHROPIC_API_KEY` | for AI | Anthropic API key. |
+| `OPENAI_API_KEY` | for AI | OpenAI API key. Used whenever it is set. |
+| `OPENAI_MODEL` | no | Defaults to `gpt-5.5`. |
+| `ANTHROPIC_API_KEY` | no | Alternative AI provider, used only if `OPENAI_API_KEY` is empty. |
 | `ANTHROPIC_MODEL` | no | Defaults to `claude-opus-5`. |
 | `STRIPE_SECRET_KEY` | for billing | `sk_test_…` while testing. |
 | `STRIPE_WEBHOOK_SECRET` | for billing | Signing secret of your webhook endpoint. |
@@ -194,7 +196,7 @@ src/
       connect/[platform]      OAuth start (PKCE + state cookie) and callback
       posts, posts/[id]       Create/update/schedule/publish/retry/delete
       queue                   Weekly posting times
-      ai/variations, ai/week  Claude generation
+      ai/variations, ai/week  AI generation
       analytics/sync          Pull metrics from each network
       billing/*, stripe/webhook
       cron/publish            Publishes due posts (bearer-protected)
@@ -204,7 +206,7 @@ src/
     platforms/                One adapter per network: authorizeUrl, exchangeCode, refresh, publish, metrics
     publisher.ts              Publishing engine, token refresh, metrics sync
     queue.ts                  Timezone-aware slot calculation
-    ai.ts                     Prompts + structured outputs (Claude)
+    ai.ts, ai-providers.ts    Prompts + structured outputs (OpenAI or Anthropic)
     plans.ts                  Plan limits and usage
   scheduler-node.ts           In-process scheduler (started from instrumentation.ts)
 ```

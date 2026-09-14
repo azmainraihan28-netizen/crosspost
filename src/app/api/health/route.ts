@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import { db } from "@/db";
 import { appUrl } from "@/lib/app-url";
+import { aiModel, aiProvider } from "@/lib/ai-providers";
 import { choice } from "../../../../scripts/db-choice.generated.mjs";
 import { configuredMap, demoAllowed } from "@/lib/platforms";
 
@@ -37,8 +38,10 @@ export async function GET(req: Request) {
     internalScheduler: process.env.INTERNAL_SCHEDULER !== "false",
     authSecret: (process.env.AUTH_SECRET?.length ?? 0) >= 32 ? "ok" : "missing or short",
     encryptionKey: process.env.ENCRYPTION_KEY?.trim() ? "set" : "falls back to AUTH_SECRET",
+    aiProvider: aiProvider() ?? "not configured",
+    aiModel: aiModel(),
+    openaiKey: shape(process.env.OPENAI_API_KEY, ["sk-proj-", "sk-svcacct-", "sk-admin-", "sk-"]),
     anthropicKey: shape(process.env.ANTHROPIC_API_KEY, ["sk-ant-"]),
-    anthropicModel: process.env.ANTHROPIC_MODEL?.trim() || "claude-opus-5 (default)",
     stripeSecretKey: shape(process.env.STRIPE_SECRET_KEY, ["sk_test_", "sk_live_", "rk_test_", "rk_live_"]),
     stripeWebhookSecret: shape(process.env.STRIPE_WEBHOOK_SECRET, ["whsec_"]),
     stripePriceId: shape(process.env.STRIPE_PRICE_ID, ["price_"]),

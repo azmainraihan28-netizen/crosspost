@@ -1,21 +1,10 @@
 import "server-only";
-import Anthropic from "@anthropic-ai/sdk";
-import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { z } from "zod";
 import { PLATFORMS, type PlatformId } from "./platforms/meta";
-import { HttpError } from "./session";
-
-const MODEL = process.env.ANTHROPIC_MODEL?.trim() || "claude-opus-5";
+import { aiProvider, generateStructured } from "./ai-providers";
 
 export function aiConfigured() {
-  return Boolean(process.env.ANTHROPIC_API_KEY);
-}
-
-let client: Anthropic | null = null;
-function anthropic() {
-  if (!aiConfigured()) throw new HttpError(503, "AI is not configured. Set ANTHROPIC_API_KEY in .env.local.");
-  client ??= new Anthropic();
-  return client;
+  return aiProvider() !== null;
 }
 
 // Post structure and content rules adapted from langchain-ai/social-media-agent
@@ -61,28 +50,7 @@ ${brandVoice ? `\n<brand-voice>\n${brandVoice}\n</brand-voice>` : ""}
 Character limits are hard limits: count carefully and stay comfortably under them.`;
 }
 
-async function generate<T extends z.ZodType>(schema: T, systemPrompt: string, user: string): Promise<z.infer<T>> {
-  try {
-    const msg = await anthropic().beta.messages.parse({
-      model: MODEL,
-      max_tokens: 16000,
-      betas: ["server-side-fallback-2026-07-01"],
-      fallbacks: "default",
-      output_config: { format: betaZodOutputFormat(schema), effort: "medium" },
-      system: systemPrompt,
-      messages: [{ role: "user", content: user }],
-    });
-    if (msg.stop_reason === "refusal") throw new HttpError(422, "The AI declined this request. Try rephrasing the topic.");
-    if (!msg.parsed_output) throw new HttpError(502, "The AI returned an unexpected response. Please try again.");
-    return msg.parsed_output;
-  } catch (err) {
-    if (err instanceof HttpError) throw err;
-    if (err instanceof Anthropic.RateLimitError) throw new HttpError(429, "AI rate limit reached. Try again in a minute.");
-    if (err instanceof Anthropic.AuthenticationError) throw new HttpError(503, "ANTHROPIC_API_KEY is invalid.");
-    if (err instanceof Anthropic.APIError) throw new HttpError(502, `AI error: ${err.message}`);
-    throw err;
-  }
-}
+const generate = generateStructured;
 
 /* ------------------------------ Variations ------------------------------ */
 
