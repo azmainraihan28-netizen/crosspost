@@ -57,8 +57,8 @@ All variables are documented in [`.env.example`](.env.example).
 | `APP_URL` | yes | Public base URL, no trailing slash. Used for OAuth callbacks and Stripe redirects. |
 | `AUTH_SECRET` | yes | Signs session cookies (32+ random bytes). |
 | `ENCRYPTION_KEY` | recommended | Encrypts OAuth tokens at rest (AES-256-GCM). Falls back to `AUTH_SECRET`. **Changing it invalidates connected accounts.** |
-| `DATABASE_URL` | yes | `file:local.db` locally; `libsql://…turso.io` in production. |
-| `DATABASE_AUTH_TOKEN` | prod | Turso auth token. |
+| `DATABASE_URL` | yes | `file:local.db` locally; `libsql://…turso.io` in production. `TURSO_DATABASE_URL` (set by Vercel's Turso integration) also works. |
+| `DATABASE_AUTH_TOKEN` | prod | Turso auth token. `TURSO_AUTH_TOKEN` also works. |
 | `INTERNAL_SCHEDULER` | no | `true` (default) runs the publish loop every 30s inside the server. Set `false` on serverless. |
 | `CRON_SECRET` | prod | Bearer token for `GET/POST /api/cron/publish`. |
 | `DEMO_MODE` | no | `true` lets unconfigured networks connect as demo accounts. **Set `false` in production.** |
