@@ -47,3 +47,6 @@ local.db*
 
 # deploy helpers
 vercel-env.local.txt
+
+.vercel
+.env*
