@@ -10,8 +10,15 @@ import { billingConfigured, getStripe } from "@/lib/billing";
 /** Permanently deletes the signed-in user's account and all their data. Requires the current password. */
 export const DELETE = route(async (req) => {
   const user = await apiUser();
-  const { password } = z.object({ password: z.string().min(1, "Enter your password") }).parse(await req.json());
-  if (!(await bcrypt.compare(password, user.passwordHash))) throw new HttpError(401, "Incorrect password");
+  const { password, confirm } = z
+    .object({ password: z.string().optional(), confirm: z.string().optional() })
+    .parse(await req.json());
+  if (user.passwordHash) {
+    if (!password || !(await bcrypt.compare(password, user.passwordHash))) throw new HttpError(401, "Incorrect password");
+  } else if (confirm !== "DELETE") {
+    // Google-only accounts have no password; require the typed confirmation instead.
+    throw new HttpError(400, "Type DELETE to confirm");
+  }
 
   // Cancel an active subscription so the user isn't billed again.
   if (user.stripeSubscriptionId && billingConfigured() && ["active", "trialing", "past_due"].includes(user.subscriptionStatus ?? "")) {

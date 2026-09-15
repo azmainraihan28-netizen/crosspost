@@ -13,7 +13,9 @@ const createdAt = () =>
 export const users = sqliteTable("users", {
   id: id(),
   email: text("email").notNull().unique(),
+  /** Empty string for accounts created with Google sign-in (no password set). */
   passwordHash: text("password_hash").notNull(),
+  googleId: text("google_id").unique(),
   name: text("name"),
   timezone: text("timezone").notNull().default("UTC"),
   plan: text("plan", { enum: ["free", "pro"] }).notNull().default("free"),

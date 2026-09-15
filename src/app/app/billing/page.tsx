@@ -109,7 +109,7 @@ export default async function BillingPage({ searchParams }: PageProps<"/app/bill
           </section>
         )}
       </div>
-      <DeleteAccount />
+      <DeleteAccount hasPassword={Boolean(user.passwordHash)} />
     </>
   );
 }

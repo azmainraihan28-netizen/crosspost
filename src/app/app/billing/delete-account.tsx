@@ -5,7 +5,7 @@ import { useState } from "react";
 import { LoaderCircle, TriangleAlert } from "lucide-react";
 import { api } from "@/lib/fetcher";
 
-export function DeleteAccount() {
+export function DeleteAccount({ hasPassword }: { hasPassword: boolean }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [password, setPassword] = useState("");
@@ -18,7 +18,7 @@ export function DeleteAccount() {
     setLoading(true);
     setError(null);
     try {
-      await api("/api/account", { method: "DELETE", body: { password } });
+      await api("/api/account", { method: "DELETE", body: { password: hasPassword ? password : undefined, confirm: confirmText } });
       router.replace("/");
       router.refresh();
     } catch (err) {
@@ -42,17 +42,19 @@ export function DeleteAccount() {
         </button>
       ) : (
         <form onSubmit={remove} className="mt-4 grid max-w-md gap-3">
-          <div>
-            <label className="label" htmlFor="del-pass">Current password</label>
-            <input id="del-pass" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="input" autoComplete="current-password" />
-          </div>
+          {hasPassword && (
+            <div>
+              <label className="label" htmlFor="del-pass">Current password</label>
+              <input id="del-pass" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="input" autoComplete="current-password" />
+            </div>
+          )}
           <div>
             <label className="label" htmlFor="del-confirm">Type DELETE to confirm</label>
             <input id="del-confirm" value={confirmText} onChange={(e) => setConfirmText(e.target.value)} className="input" />
           </div>
           {error && <p className="text-sm text-danger">{error}</p>}
           <div className="flex gap-2">
-            <button disabled={loading || confirmText !== "DELETE" || !password} className="btn bg-danger text-white hover:bg-danger/90">
+            <button disabled={loading || confirmText !== "DELETE" || (hasPassword && !password)} className="btn bg-danger text-white hover:bg-danger/90">
               {loading && <LoaderCircle className="size-4 animate-spin" />} Permanently delete
             </button>
             <button type="button" onClick={() => setOpen(false)} className="btn-ghost">

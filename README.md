@@ -7,7 +7,7 @@ Compose once, publish everywhere. A lean, self-hostable social media scheduler:
 - **Publish now, schedule, or add to a queue** of weekly posting times; **calendar** with drag-to-reschedule; **drafts**
 - **AI** (OpenAI, or Anthropic Claude): platform-tuned **post variations** and a **week of content from a topic**
 - **Analytics**: reach and engagement pulled from each network
-- **Email/password auth** and a **Stripe** subscription (Starter free / Pro $19)
+- **Email/password and Google sign-in**, and a **Stripe** subscription (Starter free / Pro $19)
 - **Demo mode**: try everything locally before registering any developer apps
 
 Built with Next.js 16 (App Router), TypeScript, Tailwind CSS 4, Drizzle ORM + libSQL (SQLite locally, Turso in production), Stripe, and the OpenAI SDK (Anthropic optional). Platform clients and prompts are adapted from [langchain-ai/social-media-agent](https://github.com/langchain-ai/social-media-agent) (MIT; see `THIRD_PARTY_NOTICES.md`).
@@ -70,6 +70,8 @@ All variables are documented in [`.env.example`](.env.example).
 | `STRIPE_WEBHOOK_SECRET` | for billing | Signing secret of your webhook endpoint. |
 | `STRIPE_PRICE_ID` | no | Recurring Price to sell. If empty, a $19/month price is created inline at checkout. |
 | `BLOB_READ_WRITE_TOKEN` | prod | Vercel Blob token for image uploads. Without it, uploads go to `public/uploads` (dev only). |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | no | Enables "Continue with Google" on login and sign-up. |
+| `SUPPORT_EMAIL` | no | Public support email shown on the legal pages. |
 | `X_CLIENT_ID` / `X_CLIENT_SECRET` | per network | X OAuth 2.0 app |
 | `LINKEDIN_CLIENT_ID` / `LINKEDIN_CLIENT_SECRET` | per network | LinkedIn app |
 | `INSTAGRAM_CLIENT_ID` / `INSTAGRAM_CLIENT_SECRET` | per network | Meta app (Instagram API with Instagram Login) |
@@ -77,6 +79,19 @@ All variables are documented in [`.env.example`](.env.example).
 | `THREADS_CLIENT_ID` / `THREADS_CLIENT_SECRET` | per network | Meta app (Threads API) |
 | `FACEBOOK_CONFIG_ID` | no | Facebook Login for Business configuration ID. When set, it replaces the requested scopes. |
 | `META_GRAPH_VERSION` | no | Defaults to `v23.0`. |
+
+---
+
+## Sign in with Google
+
+1. [Google Cloud Console](https://console.cloud.google.com/) → create a project → **Google Auth Platform → Branding**: app name, support email, app domain, and your `/privacy` and `/terms` URLs. Audience: **External**.
+2. **Clients → Create client → Web application.**
+   - Authorized JavaScript origin: `{APP_URL}`
+   - Authorized redirect URI: `{APP_URL}/api/auth/google/callback`
+3. Copy the client ID and secret into `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`, then redeploy.
+4. Only basic scopes (`openid email profile`) are requested, so Google's sensitive-scope verification isn't required. Under **Audience**, click **Publish app** so anyone can sign in. While it's in **Testing**, only listed test users can.
+
+Accounts are matched by verified email: an existing email/password account is linked to Google the first time that person uses Google sign-in. Google-only accounts have no password.
 
 ---
 

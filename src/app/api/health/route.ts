@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import { db } from "@/db";
 import { appUrl } from "@/lib/app-url";
 import { aiModel, aiProvider } from "@/lib/ai-providers";
+import { googleConfigured } from "@/lib/google-auth";
 import { choice } from "../../../../scripts/db-choice.generated.mjs";
 import { configuredMap, demoAllowed } from "@/lib/platforms";
 
@@ -46,6 +47,7 @@ export async function GET(req: Request) {
     stripeWebhookSecret: shape(process.env.STRIPE_WEBHOOK_SECRET, ["whsec_"]),
     stripePriceId: shape(process.env.STRIPE_PRICE_ID, ["price_"]),
     blobToken: shape(process.env.BLOB_READ_WRITE_TOKEN, ["vercel_blob_rw_", "eyJ"]),
+    googleSignIn: googleConfigured(),
     oauthConfigured: configuredMap(),
   });
 }
