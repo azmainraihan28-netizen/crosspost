@@ -182,17 +182,56 @@ export const facebook: PlatformAdapter = {
         fb_exchange_token: tok.access_token,
       })}`,
     );
-    const pages = await fetchJson<{ data: { id: string; name: string; access_token: string }[] }>(
+    const userToken = long.access_token;
+    type Page = { id: string; name: string; access_token?: string };
+
+    // 1. Standard listing of Pages the user manages.
+    const listed = await fetchJson<{ data: Page[] }>(
       "facebook",
-      `${FB}/me/accounts?${qs({ fields: "id,name,access_token", access_token: long.access_token })}`,
+      `${FB}/me/accounts?${qs({ fields: "id,name,access_token", access_token: userToken, limit: "100" })}`,
     );
-    if (!pages.data.length) throw new Error("No Facebook Pages found on this account");
-    return pages.data.map((p) => ({
+    let pages = listed.data.filter((p) => p.access_token);
+
+    // 2. Pages owned via a Business portfolio / selected in Login for Business often don't appear in /me/accounts.
+    //    The token's granular scopes list the exact Page IDs the user selected; fetch each Page directly.
+    if (!pages.length) {
+      const appToken = `${process.env.FACEBOOK_CLIENT_ID!.trim()}|${process.env.FACEBOOK_CLIENT_SECRET!.trim()}`;
+      const debug = await fetchJson<{
+        data: { scopes?: string[]; granular_scopes?: { scope: string; target_ids?: string[] }[] };
+      }>("facebook", `${FB}/debug_token?${qs({ input_token: userToken, access_token: appToken })}`);
+      const granted = debug.data.scopes ?? [];
+      const pageIds = [
+        ...new Set(
+          (debug.data.granular_scopes ?? [])
+            .filter((g) => ["pages_manage_posts", "pages_show_list", "pages_read_engagement"].includes(g.scope))
+            .flatMap((g) => g.target_ids ?? []),
+        ),
+      ];
+      const fetched = await Promise.all(
+        pageIds.map((id) =>
+          fetchJson<Page>("facebook", `${FB}/${id}?${qs({ fields: "id,name,access_token", access_token: userToken })}`).catch(
+            () => null,
+          ),
+        ),
+      );
+      pages = fetched.filter((p): p is Page => Boolean(p?.access_token));
+
+      if (!pages.length) {
+        const missing = ["pages_show_list", "pages_manage_posts"].filter((s) => !granted.includes(s));
+        throw new Error(
+          missing.length
+            ? `Facebook didn't grant ${missing.join(" and ")}. In the Meta app, add these permissions to the Page use case, then reconnect.`
+            : `No Page access token returned (selected Pages: ${pageIds.length}, granted: ${granted.join(", ") || "none"}). Make sure you have full control of the Page, then reconnect.`,
+        );
+      }
+    }
+
+    return pages.map((p) => ({
       externalId: p.id,
       username: p.name,
       displayName: p.name,
       avatarUrl: `${FB}/${p.id}/picture`,
-      accessToken: p.access_token,
+      accessToken: p.access_token!,
     }));
   },
 
